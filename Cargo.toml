@@ -1,0 +1,17 @@
+[package]
+name = "trade_bot"
+version = "0.1.0"
+authors = ["Mingrui Huang <mingrui.huang@setl.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4"
+pretty_env_logger = "0.2"
+env_logger = "0.5"
+dotenv = "0.13"
+tokio = { version = "1.0.1", features = ["time", "macros", "rt-multi-thread"]}
+chrono = "0.4.19"
+async-trait = "0.1.42"
+rand = "0.8.0"
