@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use log::info;
+use log::{debug, info, trace};
 
 use super::{
     market::Market,
@@ -10,6 +10,10 @@ use super::{
 impl TradingBot {
     pub async fn start(&mut self) -> Result<(), Box<dyn Error>> {
         info!("Try to place order");
+
+        trace!("Getting balances");
+        let balance = self.market.get_balances().await?;
+        debug!("balance is {}", balance);
 
         self.try_to_buy().await?;
 

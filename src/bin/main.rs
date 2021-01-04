@@ -1,26 +1,77 @@
 use chrono::prelude::*;
+use clap::{
+    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand,
+};
 use dotenv::dotenv;
 use log::{debug, error, info, trace, warn};
 use std::env;
 use tokio::time;
 use tokio::time::Instant;
-use trade_bot::{self, Coinbase, TradingBot, TradingConfig};
+use trade_bot::{self, Kraken, TradingBot, TradingConfig};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
+    let matches = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
+        .arg(
+            Arg::with_name("api_key")
+                .short("k")
+                .long("api_key")
+                .value_name("API_KEY")
+                .help("Set API_KEY. Can also set with env variable: API_KEY. This commandline argument take precedence")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("api_secret")
+                .short("s")
+                .long("api_secret")
+                .value_name("API_SECRET")
+                .help("Set API_SECRET. Can also set with env variable: API_SECRET. This commandline argument take precedence")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("trading_cadence")
+                .short("c")
+                .long("trading_cadence")
+                .value_name("TRADIND_CADENCE")
+                .help("Set TRADIND_CADENCE. Can also set with env variable: TRADIND_CADENCE. This commandline argument take precedence")
+                .takes_value(true),
+        )
+        .get_matches();
+
     env_logger::init();
 
-    let config = TradingConfig {};
-    // intialize the TradingBot for coinbase context
-    let mut coinbase_bot = TradingBot::new(config, Box::new(Coinbase {}));
+    let api_key = matches
+        .value_of("api_key")
+        .map(|s| s.to_owned())
+        .or(env::var("API_KEY").ok());
 
-    // set the interval for every 20s
-    let trading_cadence = env::var("TRADIND_CADENCE")
-        .unwrap_or_else(|_| "2".to_owned())
+    let api_secret = matches
+        .value_of("api_secret")
+        .map(|s| s.to_owned())
+        .or(env::var("API_SECRET").ok());
+
+    let trading_cadence = matches
+        .value_of("trading_cadence")
+        .map(|s| s.to_owned())
+        .or(env::var("TRADIND_CADENCE").ok())
+        .unwrap_or_else(|| "10".to_owned())
         .parse::<u64>()
         .unwrap();
+
+    if api_key.is_none() || api_secret.is_none() {
+        println!("API_KEY and API_SECRET are required");
+        std::process::exit(1);
+    }
+
+    let config = TradingConfig {};
+    let kraken = Kraken::new(&api_key.unwrap(), &api_secret.unwrap());
+    // intialize the TradingBot for coinbase context
+    let mut kraken_bot = TradingBot::new(config, Box::new(kraken));
 
     let mut interval = time::interval(time::Duration::from_secs(trading_cadence));
 
@@ -34,7 +85,10 @@ async fn main() {
 
         // trading kick off
         warn!("[TRADE] start at {:?}", now);
-        coinbase_bot.start().await.unwrap();
+        kraken_bot
+            .start()
+            .await
+            .expect("Fail to start a trade process");
 
         // trading end time
         let duration = start.elapsed();
