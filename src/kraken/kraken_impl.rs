@@ -29,18 +29,33 @@ impl Kraken {
 impl Market for Kraken {
     async fn get_balances(&self) -> Result<f32, Box<dyn Error>> {
         let api = KrakenAPI::new(self.api_key.clone(), self.secret.clone());
+
         let res = api
             .query_public::<ServerTime>(Method::Time, &HashMap::new())
             .await?;
         info!("Server time: {:?}", res);
+
+        let mut params = HashMap::new();
+        params.insert("asset".to_owned(), "ADA".to_owned());
         let res = api
-            .query_public::<HashMap<String, AssetInfo>>(Method::Assets, &HashMap::new())
+            .query_public::<HashMap<String, AssetInfo>>(Method::Assets, &params)
             .await?;
-        info!("Server time: {:?}", res);
+        info!("asset info: {:?}", res);
+
         let res = api
             .query_private::<HashMap<String, String>>(Method::Balance, &mut HashMap::new())
             .await?;
-        info!("Server time: {:?}", res);
+        info!("Balance: {:?}", res);
+
+        let mut params = HashMap::new();
+        params.insert(
+            "txid".to_owned(),
+            "OLQFEY-GHLWA-4G3MPQ,OHLGNG-7VK5I-3NDXCY".to_string(),
+        );
+        let res = api
+            .query_private::<HashMap<String, serde_json::Value>>(Method::QueryOrders, &mut params)
+            .await?;
+        info!("Query order: {:?}", res.result.unwrap().len());
         Ok(1.0)
     }
 
