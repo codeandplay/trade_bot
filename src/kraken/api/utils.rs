@@ -1,5 +1,5 @@
 use data_encoding::{BASE64, HEXUPPER};
-use log::debug;
+use log::{debug, trace};
 use ring::hmac;
 use ring::{
     digest::{Context, Digest, SHA256},
@@ -13,7 +13,6 @@ pub fn create_signature(
     params: &HashMap<String, String>,
     secret: &[u8],
 ) -> Result<String, String> {
-    debug!("url path: {}", url_path);
     let nonce: &str = if params.contains_key("nonce") {
         params.get("nonce").unwrap()
     } else {

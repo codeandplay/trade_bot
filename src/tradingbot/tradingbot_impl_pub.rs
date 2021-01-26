@@ -13,7 +13,10 @@ impl TradingBot {
 
         trace!("Getting balances");
         let balance = self.market.get_balances().await?;
-        debug!("balance is {}", balance);
+        trace!("balance is {}", balance);
+
+        trace!("Getting market price");
+        let balance = self.market.get_market_price().await?;
 
         self.try_to_buy().await?;
 

@@ -1,9 +1,7 @@
 use chrono::prelude::*;
-use clap::{
-    crate_authors, crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand,
-};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
 use dotenv::dotenv;
-use log::{debug, error, info, trace, warn};
+use log::{info, warn};
 use std::env;
 use tokio::time;
 use tokio::time::Instant;
@@ -70,7 +68,7 @@ async fn main() {
 
     let config = TradingConfig {};
     let kraken = Kraken::new(&api_key.unwrap(), &api_secret.unwrap());
-    // intialize the TradingBot for coinbase context
+    // intialize the TradingBot for kraken context
     let mut kraken_bot = TradingBot::new(config, Box::new(kraken));
 
     let mut interval = time::interval(time::Duration::from_secs(trading_cadence));

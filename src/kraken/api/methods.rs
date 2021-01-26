@@ -4,6 +4,7 @@ pub enum Method {
     Assets,
     TradesHistory,
     QueryOrders,
+    OHLC,
 }
 
 impl From<Method> for &str {
@@ -14,6 +15,7 @@ impl From<Method> for &str {
             Method::Assets => "Assets",
             Method::TradesHistory => "TradesHistory",
             Method::QueryOrders => "QueryOrders",
+            Method::OHLC => "OHLC",
         }
     }
 }

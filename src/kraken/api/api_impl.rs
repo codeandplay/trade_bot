@@ -1,29 +1,22 @@
+/// Kraken API implementation
 use crate::kraken::api::utils::create_signature;
-use chrono::{Timelike, Utc};
+use chrono::Utc;
 use data_encoding::BASE64;
-use log::{debug, error, trace, warn};
+use log::trace;
 use reqwest::blocking::Response;
-use reqwest::header::HeaderName;
 use reqwest::header::USER_AGENT;
 use serde::de::DeserializeOwned;
-use serde::Deserialize;
-use std::{collections::HashMap, error::Error, fmt, io};
+use std::{collections::HashMap, error::Error};
 
 use reqwest::header::HeaderMap;
 
-use super::{
-    api::KrakenAPI,
-    error::KrakenError,
-    methods::Method,
-    types::{AssetInfo, KrakenResponse, ServerTime},
-};
+use super::{api::KrakenAPI, error::KrakenError, methods::Method, types::KrakenResponse};
 
-use super::utils;
+const API_URL: &str = "https://api.kraken.com";
+const API_VERSION: &str = "0";
+const API_USER_AGENT: &str = "Kraken Rust API Agent";
 
-const APIURL: &str = "https://api.kraken.com";
-const APIVersion: &str = "0";
-const APIUserAgent: &str = "Kraken Rust API Agent";
-
+/// Kraken API
 impl KrakenAPI {
     pub fn new(api_key: String, secret: String) -> KrakenAPI {
         KrakenAPI {
@@ -33,6 +26,7 @@ impl KrakenAPI {
         }
     }
 
+    /// query private endpoints
     pub async fn query_private<T>(
         &self,
         method: Method,
@@ -42,8 +36,8 @@ impl KrakenAPI {
         T: DeserializeOwned + 'static,
     {
         let method: &str = method.into();
-        let url_path = format!("/{}/private/{}", APIVersion, method);
-        let url = format!("{}{}", APIURL, url_path);
+        let url_path = format!("/{}/private/{}", API_VERSION, method);
+        let url = format!("{}{}", API_URL, url_path);
         let secret_bytes = BASE64
             .decode(&self.secret.as_bytes())
             .expect("Not able to decode Kraken api secret");
@@ -63,19 +57,16 @@ impl KrakenAPI {
             sig.parse().expect("fail to parse request signature"),
         );
 
-        debug!("Query request url: {}", url);
-        debug!("Query request method: {}", method);
-        debug!("Query with nonce: {}", nonce);
-        debug!("Query with api: {}", self.api_key);
-        debug!("Query with secret: {}", self.secret);
-        debug!("Query request signature: {}", sig);
-        debug!("Query request params: {:?}", params);
-        debug!("Query request header: {:?}", header_map);
+        trace!("Query request url: {}", url);
+        trace!("Query request method: {}", method);
+        trace!("Query with nonce: {}", nonce);
+        trace!("Query request params: {:?}", params);
 
         let res: KrakenResponse<T> = self.do_request(&url, params, &header_map).await?.json()?;
         Ok(res)
     }
 
+    /// query public endpoints
     pub async fn query_public<T>(
         &self,
         method: Method,
@@ -85,7 +76,10 @@ impl KrakenAPI {
         T: DeserializeOwned + 'static,
     {
         let method: &str = method.into();
-        let url = format!("{}/{}/public/{}", APIURL, APIVersion, method);
+        let url = format!("{}/{}/public/{}", API_URL, API_VERSION, method);
+
+        trace!("Query request url: {}", url);
+        trace!("Query request method: {}", method);
 
         let res: KrakenResponse<T> = self
             .do_request(&url, params, &HeaderMap::new())
@@ -94,6 +88,7 @@ impl KrakenAPI {
         Ok(res)
     }
 
+    /// Send Http reqeust.
     async fn do_request(
         &self,
         url: &str,
@@ -101,15 +96,12 @@ impl KrakenAPI {
         headers: &HeaderMap,
     ) -> Result<Response, Box<dyn Error>> {
         let mut header_map = HeaderMap::new();
-        header_map.insert(USER_AGENT, APIUserAgent.parse().unwrap());
+        header_map.insert(USER_AGENT, API_USER_AGENT.parse().unwrap());
 
         // Additional headers.
         for (n, v) in headers {
             header_map.insert(n, v.to_owned());
         }
-
-        debug!("Do Request: Query request params: {:?}", params);
-        debug!("Do Request: Query request header: {:?}", header_map);
 
         let res = self
             .client
