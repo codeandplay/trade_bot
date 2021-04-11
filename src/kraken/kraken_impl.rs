@@ -7,6 +7,7 @@ use super::{
     },
     kraken::Kraken,
 };
+use crate::kraken::api::api_impl::BTCUSD;
 use crate::tradingbot::market::Market;
 use async_trait::async_trait;
 use chrono::DateTime;
@@ -79,7 +80,7 @@ impl Market for Kraken {
     async fn get_market_price(&self) -> Result<f32, Box<dyn Error>> {
         // https://api.kraken.com/0/public/OHLC?pair=TBTCUSD&interval=60&since=1607023200
         let mut params = HashMap::new();
-        params.insert("pair".into(), "TBTCUSD".into());
+        params.insert("pair".into(), BTCUSD.into());
         params.insert("interval".into(), "240".into());
         let res = self
             .api_client
@@ -89,8 +90,8 @@ impl Market for Kraken {
         let result = res.result.expect("Should have result");
 
         let data = result
-            .get("TBTCUSD")
-            .expect("OHLC data exist for the queried pair");
+            .get(BTCUSD)
+            .expect("OHLC data should exist for the queried pair");
 
         let data = data.as_array().expect("should in array of OHLC");
         let length = data.len();

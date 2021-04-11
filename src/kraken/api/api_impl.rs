@@ -15,6 +15,7 @@ use super::{api::KrakenAPI, error::KrakenError, methods::Method, types::KrakenRe
 const API_URL: &str = "https://api.kraken.com";
 const API_VERSION: &str = "0";
 const API_USER_AGENT: &str = "Kraken Rust API Agent";
+pub const BTCUSD: &str = "XXBTZUSD";
 
 /// Kraken API
 impl KrakenAPI {
