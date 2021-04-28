@@ -18,8 +18,6 @@ impl TradingBot {
         trace!("Getting market price");
         let balance = self.market.get_market_price().await?;
 
-        self.try_to_buy().await?;
-
         Ok(())
     }
 
@@ -30,13 +28,33 @@ impl TradingBot {
         }
     }
 
-    async fn try_to_buy(&mut self) -> Result<f32, Box<dyn Error>> {
-        info!("try to buy");
+    async fn buy_order_enter(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("buy order enter");
         Ok(1.0)
     }
 
-    async fn try_to_sell(&mut self) -> Result<f32, Box<dyn Error>> {
-        info!("try to sell");
+    async fn buy_order_exit_profit(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("buy order exit with profit");
+        Ok(1.0)
+    }
+
+    async fn buy_order_exit_loss(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("buy order exit with loss");
+        Ok(1.0)
+    }
+
+    async fn sell_order_enter(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("sell order enter");
+        Ok(1.0)
+    }
+
+    async fn sell_order_exit_profit(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("sell order exit with profit");
+        Ok(1.0)
+    }
+
+    async fn sell_order_exit_loss(&mut self) -> Result<f32, Box<dyn Error>> {
+        info!("sell order exit with loss");
         Ok(1.0)
     }
 }
